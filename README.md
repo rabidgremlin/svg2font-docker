@@ -1,23 +1,79 @@
 # svg2font-docker
-Containerised tool for converting a folder of .svg files into a .ttf font
 
-## Dev container
+Convert a folder of SVG glyphs/icons into TTF and OTF fonts.
 
-The `.devcontainer` folder provides a minimal environment based on Debian trixie with GitHub CLI, Node.js, Python, uv, Docker-in-Docker (moby disabled) and the [Codex CLI](https://github.com/openai/codex).
+## User guide
 
-## Build a font
+### Get started
 
-Run `uv run python main.py example` (replace `example` with your font folder).
-The folder must contain `font.yaml` with a `fontname`; optional string fields are
-`familyname`, `fullname`, `weight`, `version`, and `copyright`. Quote version
-numbers in YAML. Missing family and full names default to `fontname`. The font
-name must contain only ASCII letters, digits, underscores, periods, or hyphens,
-and be at most 63 characters long.
+You need Docker installed and running.
 
-Name each SVG `X_description.svg`, where `X` is a single case-sensitive
-character, a decimal code point (two or more digits), or a Unicode code point
-such as `U+0041`. For example, `a_icon.svg` and `A_icon.svg` map to different
-characters; `65_icon.svg` and `U+0041_icon.svg` both map to `A` and cannot be
-used together. A single digit maps to that digit character. SVG extensions are
-case-insensitive. The generated TTF and OTF files are written into the folder,
-using `fontname` as the filename, and existing files may be overwritten.
+1. On the [GitHub repository page](https://github.com/rabidgremlin/svg2font-docker), click **Code**, then **Download ZIP**.
+2. Unpack the ZIP and open a terminal in the extracted folder.
+3. Build the Docker image and run it against the included example:
+
+   ```bash
+   docker build -t svg2font .
+   docker run --rm -v "$(pwd)/example:/data" svg2font .
+   ```
+
+The generated `.ttf` and `.otf` files appear in the `example` folder. Existing
+files with the same names are overwritten.
+
+### Create your own font
+
+Create a folder containing a `font.yaml` file and your SVG glyphs/icons. For example:
+
+```yaml
+fontname: MyIconFont-Regular
+familyname: My Icon Font
+fullname: My Icon Font Regular
+weight: Regular
+version: "1.0"
+copyright: Copyright 2026 Your Name
+```
+
+Only `fontname` is required. The other fields are optional strings; quote version
+numbers in YAML. Missing `familyname` and `fullname` default to `fontname`. The
+font name must contain only ASCII letters, digits, underscores, periods, or
+hyphens, and be at most 63 characters long.
+
+Name each SVG `X_description.svg`, where `X` identifies the character:
+
+- A single character, such as `a_icon.svg` or `A_icon.svg`. Case matters, so these map to different characters. A single digit maps to that digit character.
+- A decimal code point of two or more digits, such as `65_icon.svg` for `A`.
+- A Unicode code point, such as `U+0041_icon.svg` for `A`.
+
+Each character can appear only once: `65_icon.svg` and `U+0041_icon.svg` cannot
+be used together. SVG extensions are case-insensitive.
+
+Mount your font folder at `/data` and pass `.` to use it:
+
+```bash
+docker run --rm -v "/path/to/my-font:/data" svg2font .
+```
+
+Alternatively, mount a parent folder and pass a subfolder name:
+
+```bash
+docker run --rm -v "/path/to/fonts:/data" svg2font my-font
+```
+
+The mounted folder must be writable. The generated fonts are saved alongside the
+inputs using `fontname` as the filename. On Linux, add
+`--user "$(id -u):$(id -g)"` to the `docker run` command if you want output files
+owned by your current user.
+
+## Developer guide
+
+Open the repository in a development container using the included `.devcontainer`
+configuration. Its setup installs FontForge's Python bindings and prepares a `uv`
+environment with access to system packages.
+
+Run the script inside the development container:
+
+```bash
+uv run python main.py example
+```
+
+Replace `example` with the path to another font input folder.
