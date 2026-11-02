@@ -6,19 +6,22 @@ Convert a folder of SVG glyphs/icons into TTF and OTF fonts.
 
 ### Get started
 
-You need Docker installed and running.
+You need Docker installed and running. To build a font from your own folder:
 
-1. On the [GitHub repository page](https://github.com/rabidgremlin/svg2font-docker), click **Code**, then **Download ZIP**.
-2. Unpack the ZIP and open a terminal in the extracted folder.
-3. Build the Docker image and run it against the included example:
+```bash
+docker run --rm -v "/path/to/my-font:/data" ghcr.io/rabidgremlin/svg2font-docker:latest .
+```
 
-   ```bash
-   docker build -t svg2font .
-   docker run --rm -v "$(pwd)/example:/data" svg2font .
-   ```
-
-The generated `.ttf` and `.otf` files appear in the `example` folder. Existing
+Docker automatically pulls the image if it is not already available locally.
+The generated `.ttf` and `.otf` files appear alongside your inputs. Existing
 files with the same names are overwritten.
+
+The repository contains [example inputs](example/) and a [generated TTF font](example/SVG2FontExampleFont-Regular.ttf).
+To try the example, download a local copy of the example folder, then run:
+
+```bash
+docker run --rm -v "/path/to/example:/data" ghcr.io/rabidgremlin/svg2font-docker:latest .
+```
 
 ### Create your own font
 
@@ -50,13 +53,13 @@ be used together. SVG extensions are case-insensitive.
 Mount your font folder at `/data` and pass `.` to use it:
 
 ```bash
-docker run --rm -v "/path/to/my-font:/data" svg2font .
+docker run --rm -v "/path/to/my-font:/data" ghcr.io/rabidgremlin/svg2font-docker:latest .
 ```
 
 Alternatively, mount a parent folder and pass a subfolder name:
 
 ```bash
-docker run --rm -v "/path/to/fonts:/data" svg2font my-font
+docker run --rm -v "/path/to/fonts:/data" ghcr.io/rabidgremlin/svg2font-docker:latest my-font
 ```
 
 The mounted folder must be writable. The generated fonts are saved alongside the
