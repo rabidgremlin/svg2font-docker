@@ -67,6 +67,17 @@ inputs using `fontname` as the filename. On Linux, add
 `--user "$(id -u):$(id -g)"` to the `docker run` command if you want output files
 owned by your current user.
 
+By default, glyphs retain the vertical position produced by FontForge's SVG
+import. To shift each outline so its bottom sits on the font baseline, pass
+`--align-baseline` after the image name:
+
+```bash
+docker run --rm -v "/path/to/my-font:/data" ghcr.io/rabidgremlin/svg2font-docker:latest --align-baseline .
+```
+
+This does not scale or vertically center the outlines. Both modes use 15 font
+units of spacing on each side of each glyph.
+
 ## Developer guide
 
 Open the repository in a development container using the included `.devcontainer`
@@ -79,4 +90,5 @@ Run the script inside the development container:
 uv run python main.py example
 ```
 
-Replace `example` with the path to another font input folder.
+Replace `example` with the path to another font input folder. To align outlines
+to the baseline, run `uv run python main.py --align-baseline example`.

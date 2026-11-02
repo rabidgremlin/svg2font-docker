@@ -54,7 +54,7 @@ def discover_svgs(folder):
     return mappings
 
 
-def create_font(folder):
+def create_font(folder, align_baseline=False):
     metadata = load_metadata(folder)
     mappings = discover_svgs(folder)
     import fontforge
@@ -66,8 +66,9 @@ def create_font(folder):
         for codepoint, path in mappings.items():
             glyph = font.createChar(codepoint)
             glyph.importOutlines(str(path))
-            ymin = glyph.boundingBox()[1]
-            glyph.transform([1, 0, 0, 1, 0, -ymin])
+            if align_baseline:
+                ymin = glyph.boundingBox()[1]
+                glyph.transform([1, 0, 0, 1, 0, -ymin])
             glyph.left_side_bearing = 15
             glyph.right_side_bearing = 15
         for extension in ("ttf", "otf"):
@@ -80,9 +81,11 @@ def create_font(folder):
 def main():
     parser = argparse.ArgumentParser(description="Build a font from a folder of SVGs")
     parser.add_argument("folder", type=Path)
+    parser.add_argument("--align-baseline", action="store_true",
+                        help="align the bottom of each outline to the baseline")
     args = parser.parse_args()
     try:
-        create_font(args.folder)
+        create_font(args.folder, align_baseline=args.align_baseline)
     except (ValueError, OSError, RuntimeError) as exc:
         print(f"Error: {exc}", file=sys.stderr)
         return 1
